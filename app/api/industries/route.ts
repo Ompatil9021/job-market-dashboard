@@ -25,17 +25,44 @@ function getFieldValue(rec: any, candidates: string[]) {
 }
 
 function getIndustry(rec: any): string {
-  const industry =
-    getFieldValue(rec, ["Industry", "industry"]) ||
-    getFieldValue(rec, ["Role", "role", "Sector", "sector"])
-  if (industry) return String(industry)
+  // First try to get explicit industry field
+  const explicitIndustry = getFieldValue(rec, ["industry","Industry","Role","role","sector","Sector"])
+  if (explicitIndustry && explicitIndustry.trim() !== "") {
+    return explicitIndustry.toString()
+  }
 
-  const title = (getFieldValue(rec, ["Job Title", "title"]) || "").toLowerCase()
-  if (title.includes("nurse") || title.includes("doctor") || title.includes("hospital")) return "Healthcare"
-  if (title.includes("engineer") || title.includes("developer") || title.includes("software")) return "Technology"
-  if (title.includes("finance") || title.includes("accountant") || title.includes("bank")) return "Finance"
-  if (title.includes("teacher") || title.includes("professor") || title.includes("curriculum")) return "Education"
-  if (title.includes("manufacturing") || title.includes("production") || title.includes("factory")) return "Manufacturing"
+  // Infer industry from job title and skills
+  const title = (getFieldValue(rec, ["title", "job_title", "Job Title"]) || "").toLowerCase()
+  const skills = (getFieldValue(rec, ["skills", "Skills"]) || "").toLowerCase()
+  const combined = `${title} ${skills}`
+
+  if (combined.includes("nurse") || combined.includes("doctor") || combined.includes("hospital") || 
+      combined.includes("healthcare") || combined.includes("medical") || combined.includes("clinical")) {
+    return "Healthcare"
+  }
+  if (combined.includes("engineer") || combined.includes("developer") || combined.includes("software") || 
+      combined.includes("programming") || combined.includes("coding") || combined.includes("tech") ||
+      combined.includes("api") || combined.includes("javascript") || combined.includes("python") ||
+      combined.includes("java") || combined.includes("react") || combined.includes("node")) {
+    return "Technology"
+  }
+  if (combined.includes("finance") || combined.includes("accountant") || combined.includes("bank") ||
+      combined.includes("financial") || combined.includes("investment") || combined.includes("trading")) {
+    return "Finance"
+  }
+  if (combined.includes("teacher") || combined.includes("professor") || combined.includes("curriculum") ||
+      combined.includes("education") || combined.includes("academic") || combined.includes("student")) {
+    return "Education"
+  }
+  if (combined.includes("manufacturing") || combined.includes("production") || combined.includes("factory") ||
+      combined.includes("engineer") || combined.includes("construction") || combined.includes("civil")) {
+    return "Manufacturing"
+  }
+  if (combined.includes("marketing") || combined.includes("sales") || combined.includes("advertising") ||
+      combined.includes("promotion") || combined.includes("brand")) {
+    return "Marketing"
+  }
+
   return "Other"
 }
 

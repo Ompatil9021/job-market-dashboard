@@ -53,9 +53,45 @@ function extractSkillsFromRecord(rec: any): string[] {
 }
 
 function getIndustry(rec: any): string {
-  return (
-    getFieldValue(rec, ["industry","Industry","Role","role","sector","Sector"]) || "Unknown"
-  ).toString()
+  // First try to get explicit industry field
+  const explicitIndustry = getFieldValue(rec, ["industry","Industry","Role","role","sector","Sector"])
+  if (explicitIndustry && explicitIndustry.trim() !== "") {
+    return explicitIndustry.toString()
+  }
+
+  // Infer industry from job title and skills
+  const title = (getFieldValue(rec, ["title", "job_title", "Job Title"]) || "").toLowerCase()
+  const skills = (getFieldValue(rec, ["skills", "Skills"]) || "").toLowerCase()
+  const combined = `${title} ${skills}`
+
+  if (combined.includes("nurse") || combined.includes("doctor") || combined.includes("hospital") || 
+      combined.includes("healthcare") || combined.includes("medical") || combined.includes("clinical")) {
+    return "Healthcare"
+  }
+  if (combined.includes("engineer") || combined.includes("developer") || combined.includes("software") || 
+      combined.includes("programming") || combined.includes("coding") || combined.includes("tech") ||
+      combined.includes("api") || combined.includes("javascript") || combined.includes("python") ||
+      combined.includes("java") || combined.includes("react") || combined.includes("node")) {
+    return "Technology"
+  }
+  if (combined.includes("finance") || combined.includes("accountant") || combined.includes("bank") ||
+      combined.includes("financial") || combined.includes("investment") || combined.includes("trading")) {
+    return "Finance"
+  }
+  if (combined.includes("teacher") || combined.includes("professor") || combined.includes("curriculum") ||
+      combined.includes("education") || combined.includes("academic") || combined.includes("student")) {
+    return "Education"
+  }
+  if (combined.includes("manufacturing") || combined.includes("production") || combined.includes("factory") ||
+      combined.includes("engineer") || combined.includes("construction") || combined.includes("civil")) {
+    return "Manufacturing"
+  }
+  if (combined.includes("marketing") || combined.includes("sales") || combined.includes("advertising") ||
+      combined.includes("promotion") || combined.includes("brand")) {
+    return "Marketing"
+  }
+
+  return "Other"
 }
 
 function getYear(rec: any): number | null {
@@ -100,12 +136,33 @@ export async function GET(request: NextRequest) {
       const industry = getIndustry(rec)
 
       // --- Apply industry filter ---
-      if (industryFilter !== "all" && industry.toLowerCase() !== industryFilter) continue
+      if (industryFilter !== "all") {
+        const industryLower = industry.toLowerCase()
+        const filterLower = industryFilter.toLowerCase()
+        
+        // Flexible matching for common industry variations
+        const isMatch = industryLower === filterLower ||
+          industryLower.includes(filterLower) ||
+          filterLower.includes(industryLower) ||
+          (filterLower === "technology" && (industryLower.includes("tech") || industryLower.includes("it"))) ||
+          (filterLower === "healthcare" && industryLower.includes("health")) ||
+          (filterLower === "manufacturing" && industryLower.includes("manufactur")) ||
+          (filterLower === "finance" && industryLower.includes("financ")) ||
+          (filterLower === "education" && industryLower.includes("educat"))
+        
+        if (!isMatch) continue
+      }
 
       // --- Apply time range filter ---
       const year = getYear(rec)
       if (year && timeRange !== "all") {
-        const cutoff = maxYear - (timeRange === "5year" ? 5 : 1)
+        let yearsBack = 1
+        if (timeRange === "6months") yearsBack = 0.5
+        else if (timeRange === "1year") yearsBack = 1
+        else if (timeRange === "2years") yearsBack = 2
+        else if (timeRange === "5year") yearsBack = 5
+        
+        const cutoff = maxYear - yearsBack
         if (year < cutoff) continue
       }
 

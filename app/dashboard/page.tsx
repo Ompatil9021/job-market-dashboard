@@ -64,7 +64,7 @@ export default function DashboardPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Industries</SelectItem>
-                <SelectItem value="it">Information Technology</SelectItem>
+                <SelectItem value="technology">Technology</SelectItem>
                 <SelectItem value="healthcare">Healthcare</SelectItem>
                 <SelectItem value="manufacturing">Manufacturing</SelectItem>
                 <SelectItem value="finance">Finance</SelectItem>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
                 <SelectItem value="6months">Last 6 months</SelectItem>
                 <SelectItem value="1year">Last year</SelectItem>
                 <SelectItem value="2years">Last 2 years</SelectItem>
-                <SelectItem value="5years">Last 5 years</SelectItem>
+                <SelectItem value="5year">Last 5 years</SelectItem>
               </SelectContent>
             </Select>
 
@@ -138,6 +138,7 @@ export default function DashboardPage() {
                   biasAdjusted={biasAdjusted}
                   industry={selectedIndustry}
                   timeRange={selectedTimeRange}
+                  searchQuery={searchQuery}
                 />
               </CardContent>
             </Card>

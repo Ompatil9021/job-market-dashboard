@@ -45,6 +45,8 @@ export function EmergingSkillsTracker({ industry, timeRange, searchQuery }: Emer
 
         console.log("[v0] Fetched emerging skills data:", result.emergingSkills?.length || 0, "skills")
         console.log("[v0] Fetched trend data:", result.trends?.length || 0, "data points")
+        console.log("[v0] Sample emerging skill:", result.emergingSkills?.[0])
+        console.log("[v0] Sample trend data:", result.trends?.[0])
 
         setEmergingSkills(result.emergingSkills || [])
         setTrendData(result.trends || [])
@@ -67,7 +69,20 @@ export function EmergingSkillsTracker({ industry, timeRange, searchQuery }: Emer
     )
   }
 
-  const filteredSkills = emergingSkills.filter((skill) => skill.skill.toLowerCase().includes(searchQuery.toLowerCase()))
+  if (!emergingSkills || emergingSkills.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-muted-foreground">No emerging skills data available</p>
+          <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters or check back later</p>
+        </div>
+      </div>
+    )
+  }
+
+  const filteredSkills = emergingSkills.filter((skill) => 
+    searchQuery ? skill.skill.toLowerCase().includes(searchQuery.toLowerCase()) : true
+  )
 
   return (
     <div className="space-y-6">
